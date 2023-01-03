@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--扫描除控制层其他层组件-->
+    <context:component-scan base-package="com.whn">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--引入jdbc.properties-->
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+
+    <!--配置Druid数据源-->
+    <bean id="dataSource"
+          class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!--配置SqlSessionFactoryBean-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--设置数据源-->
+        <property name="dataSource" ref="dataSource"></property>
+        <!--配置类型别名所对应的包-->
+        <property name="typeAliasesPackage" value="com.whn.pojo"></property>
+        <!--驼峰映射-->
+        <property name="configuration">
+            <bean class="org.apache.ibatis.session.Configuration">
+                <property name="mapUnderscoreToCamelCase" value="true"></property>
+            </bean>
+        </property>
+        <!--配置mybatis分页插件-->
+        <property name="plugins">
+            <list>
+                <bean class="com.github.pagehelper.PageInterceptor"></bean>
+            </list>
+        </property>
+    </bean>
+
+    <!--配置mapper接口的扫描位置-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.whn.mapper"></property>
+    </bean>
+
+    <!--配置事务管理-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+</beans>
